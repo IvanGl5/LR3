@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Utils.h"
 #include "Logger.h"
+#include "Connection.h"
 
 std::vector<std::string> getMenuOptionsPipe = {
         "Выход",
@@ -31,7 +32,7 @@ void Pipe::printPipeInfo(std::ostream& out) {
 int Pipe::nextId = 1;
 std::unordered_map<int, Pipe> Pipe::pipes;
 
-Pipe::Pipe(int id, const std::string& name, double length, double diameter, bool repairStatus)
+Pipe::Pipe(int id, const std::string& name, double length, int diameter, bool repairStatus)
     : id(id), name(name), length(length), diameter(diameter), repairStatus(repairStatus) {
     logger.log("Создан новый объект Pipe с ID: " + std::to_string(id));
 }
@@ -72,6 +73,30 @@ void Pipe::addPipe() {
     pipe.readFromConsole();
     pipes[pipe.getId()] = pipe;
     logger.log("Добавлена новая труба с ID: " + std::to_string(pipe.getId()));
+}
+
+void Pipe::addPipeWithDiameter(int givenDiameter) {
+    logger.log("Создание новой трубы с заданным диаметром.");
+
+    if (givenDiameter < 10 || givenDiameter > 10000) {
+        std::cerr << "Ошибка: Диаметр трубы должен быть в диапазоне от 10 до 10000 мм.\n";
+        logger.log("Ошибка: Передан некорректный диаметр.");
+        return;
+    }
+
+    Pipe pipe;
+    pipe.setId(nextId++);
+    pipe.diameter = givenDiameter;
+
+    std::cout << "Введите название трубы: ";
+    std::getline(std::cin, pipe.name);
+    pipe.length = inputInRange<int>("Введите длину трубы (в км): ", 0.1, 10000);
+    pipe.repairStatus = false;
+
+    pipes[pipe.getId()] = pipe;
+
+    std::cout << "Труба успешно создана.\n";
+    logger.log("Добавлена новая труба с ID: " + std::to_string(pipe.getId()) + " и диаметром: " + std::to_string(givenDiameter) + " мм.");
 }
 
 void Pipe::displayAll() {
@@ -126,7 +151,7 @@ std::vector<Pipe> Pipe::findPipes() {
         std::cout << "Введите название трубы: ";
         std::getline(std::cin, name);
         for (const auto& [id, pipe] : pipes) {
-            if (pipe.name == name) {
+            if (pipe.name.find(name) != std::string::npos) {
                 results.push_back(pipe);
             }
         }
@@ -159,6 +184,7 @@ void Pipe::deletePipeMenu() {
     if (it != pipes.end()) {
         pipes.erase(it);
         std::cout << "Труба с ID " << pipeId << " успешно удалена.\n";
+        Connection::deleteConnectionsWithPipe(pipeId);
         logger.log("Удалена труба с ID: " + std::to_string(pipeId));
     }
     else {

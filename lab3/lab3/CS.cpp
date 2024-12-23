@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Utils.h"
 #include "Logger.h"
+#include "Connection.h"
 
 int CompressorStation::nextId = 1;
 std::unordered_map<int, CompressorStation> CompressorStation::stations;
@@ -70,7 +71,6 @@ void CompressorStation::addStation() {
     station.readFromConsole();
     stations[station.getId()] = station;
     logger.log("Добавлена новая CompressorStation с ID: " + std::to_string(station.getId()));
-
 }
 
 void CompressorStation::displayAll() {
@@ -130,6 +130,7 @@ void CompressorStation::deleteStation() {
 
     if (stations.erase(stationId)) {
         logger.log("Станция с ID " + std::to_string(stationId) + " успешно удалена.");
+        Connection::deleteConnectionsWithStation(stationId);
         std::cout << "Станция с ID " << stationId << " успешно удалена.\n";
     }
     else {
@@ -164,7 +165,7 @@ void CompressorStation::searchStationsByUnusedWorkshopPercentage() {
 std::vector<CompressorStation> CompressorStation::findStationsByName(const std::string& name) {
     std::vector<CompressorStation> results;
     for (const auto& [id, station] : stations) {
-        if (station.name == name) {
+        if (station.name.find(name) != std::string::npos) {
             results.push_back(station);
         }
     }
