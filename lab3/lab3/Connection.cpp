@@ -227,7 +227,7 @@ void Connection::writeToConsole() const {
     std::cout << "Соединение ID: " << id << "\n";
     std::cout << "Труба ID: " << pipeId << "\n";
     std::cout << "Станция 1 ID: " << stationId1 << "\n";
-    std::cout << "Станция 2 ID: " << stationId2 << "\n\n";
+    std::cout << "Станция 2 ID: " << stationId2 << "\n";
     auto it = Pipe::pipes.find(pipeId);
     if (it != Pipe::pipes.end()) {
         const Pipe& pipe = it->second;
